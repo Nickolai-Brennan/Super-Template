@@ -1,0 +1,281 @@
+name: ai-governance-review
+
+on:
+  push:
+    paths:
+      - 'agents/**'
+      - 'instructions/**'
+      - 'skills/**'
+      - 'hooks/**'
+      - 'workflows/**'
+      - '.gitignore/Agents/**'
+      - '.gitignore/Instructions/**'
+      - '.gitignore/Skills/**'
+      - '.gitignore/Hooks/**'
+      - '.gitignore/Workflows/**'
+  pull_request:
+    paths:
+      - 'agents/**'
+      - 'instructions/**'
+      - 'skills/**'
+      - 'hooks/**'
+      - 'workflows/**'
+      - '.gitignore/Agents/**'
+      - '.gitignore/Instructions/**'
+      - '.gitignore/Skills/**'
+      - '.gitignore/Hooks/**'
+      - '.gitignore/Workflows/**'
+
+jobs:
+  review-ai-system-files:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Review changed AI system files
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const core = require('@actions/core');
+
+            const isPR = context.eventName === 'pull_request';
+            let files = [];
+
+            if (isPR) {
+              const response = await github.rest.pulls.listFiles({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+                per_page: 100,
+              });
+              files = response.data
+                .filter(file => ['added', 'modified'].includes(file.status))
+                .map(file => file.filename);
+            } else {
+              const added = (context.payload.commits || []).flatMap(commit => commit.added || []);
+              const modified = (context.payload.commits || []).flatMap(commit => commit.modified || []);
+              files = [...new Set([...added, ...modified])];
+            }
+
+            const patterns = [
+              /^agents\/.+\.md$/,
+              /^instructions\/.+\.md$/,
+              /^skills\/.+\/SKILL\.md$/,
+              /^hooks\/.+/,
+              /^workflows\/.+\.md$/,
+              /^\.gitignore\/Agents\/.+\.md$/,
+              /^\.gitignore\/Instructions\/.+\.md$/,
+              /^\.gitignore\/Skills\/.+\.md$/,
+              /^\.gitignore\/Hooks\/.+/,
+              /^\.gitignore\/Workflows\/.+\.md$/,
+            ];
+
+            const reviewTargets = files.filter(file => patterns.some(pattern => pattern.test(file)));
+
+            if (!reviewTargets.length) {
+              core.info('No AI system files changed.');
+              return;
+            }
+
+            function classifyFile(file) {
+              if (/\/Agents\//.test(file) || /^agents\//.test(file)) return 'agent';
+              if (/\/Instructions\//.test(file) || /^instructions\//.test(file)) return 'instruction';
+              if (/\/Skills\//.test(file) || /^skills\//.test(file)) return 'skill';
+              if (/\/Hooks\//.test(file) || /^hooks\//.test(file)) return 'hook';
+              if (/\/Workflows\//.test(file) || /^workflows\//.test(file)) return 'workflow';
+              return 'file';
+            }
+
+            function getFrontmatter(content) {
+              const match = content.match(/^---\n([\s\S]*?)\n---\n?/);
+              return match ? match[1] : null;
+            }
+
+            function parseTags(frontmatter) {
+              const tagsMatch = frontmatter && frontmatter.match(/tags:\n((?:\s*-\s.*\n?)+)/);
+              if (!tagsMatch) return [];
+              return tagsMatch[1]
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line.startsWith('- '))
+                .map(line => line.replace(/^- /, '').trim());
+            }
+
+            function hasField(frontmatter, field) {
+              const pattern = new RegExp(`^${field}:\\s*.+$`, 'm');
+              return pattern.test(frontmatter || '');
+            }
+
+            function hasHeading(content, heading) {
+              const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              return new RegExp(`^#{1,6}\\s+${escaped}$`, 'mi').test(content);
+            }
+
+            function evaluateFile(file) {
+              const kind = classifyFile(file);
+              const result = {
+                file,
+                kind,
+                findings: [],
+                improvements: [],
+              };
+
+              if (!fs.existsSync(file)) {
+                result.findings.push('File is not available in the checked out workspace.');
+                result.improvements.push('Ensure the file exists in the current checkout before review.');
+                return result;
+              }
+
+              const content = fs.readFileSync(file, 'utf8');
+              const frontmatter = getFrontmatter(content);
+
+              if (!frontmatter) {
+                result.findings.push('Missing YAML frontmatter.');
+                result.improvements.push('Add YAML frontmatter at the top of the file with metadata such as name, description, owner, recommended_use, and tags.');
+              } else {
+                if (!hasField(frontmatter, 'name')) {
+                  result.findings.push('Frontmatter is missing `name`.');
+                  result.improvements.push('Add a `name` field to frontmatter.');
+                }
+                if (!hasField(frontmatter, 'description')) {
+                  result.findings.push('Frontmatter is missing `description`.');
+                  result.improvements.push('Add a concise `description` field to frontmatter.');
+                }
+                if (!hasField(frontmatter, 'owner')) {
+                  result.findings.push('Frontmatter is missing `owner`.');
+                  result.improvements.push('Add an `owner` field to establish responsibility.');
+                }
+                if (!hasField(frontmatter, 'recommended_use')) {
+                  result.findings.push('Frontmatter is missing `recommended_use`.');
+                  result.improvements.push('Add `recommended_use` to clarify when the file should be used.');
+                }
+
+                const tags = parseTags(frontmatter);
+                if (['agent', 'instruction', 'skill'].includes(kind)) {
+                  if (tags.length !== 3) {
+                    result.findings.push(`Expected exactly 3 tags, found ${tags.length}.`);
+                    result.improvements.push('Adjust the `tags` list to contain exactly 3 meaningful tags.');
+                  }
+                }
+              }
+
+              if (kind === 'agent') {
+                if (!hasHeading(content, 'Mission')) {
+                  result.findings.push('Missing `Mission` section.');
+                  result.improvements.push('Add a `## Mission` or `# Mission` section describing the agent purpose.');
+                }
+                if (!hasHeading(content, 'Responsibilities')) {
+                  result.findings.push('Missing `Responsibilities` section.');
+                  result.improvements.push('Add a responsibilities section defining the agent scope.');
+                }
+                if (!hasHeading(content, 'Output Requirements')) {
+                  result.findings.push('Missing `Output Requirements` section.');
+                  result.improvements.push('Add an output contract so generated results are predictable and implementation-ready.');
+                }
+                if (!hasHeading(content, 'Evaluation Standards')) {
+                  result.findings.push('Missing `Evaluation Standards` section.');
+                  result.improvements.push('Add evaluation criteria so the agent can validate quality consistently.');
+                }
+              }
+
+              if (kind === 'skill') {
+                if (!hasHeading(content, 'Purpose')) {
+                  result.findings.push('Missing `Purpose` section.');
+                  result.improvements.push('Add a purpose section describing the skill outcome.');
+                }
+                if (!hasHeading(content, 'Inputs')) {
+                  result.findings.push('Missing `Inputs` section.');
+                  result.improvements.push('Add an inputs section describing required context.');
+                }
+                if (!hasHeading(content, 'Outputs')) {
+                  result.findings.push('Missing `Outputs` section.');
+                  result.improvements.push('Add an outputs section describing expected deliverables.');
+                }
+              }
+
+              if (kind === 'instruction') {
+                if (!hasHeading(content, 'Purpose')) {
+                  result.findings.push('Missing `Purpose` section.');
+                  result.improvements.push('Add a purpose section to define intent.');
+                }
+                if (!hasHeading(content, 'Rules')) {
+                  result.findings.push('Missing `Rules` section.');
+                  result.improvements.push('Add a rules section to define required behavior.');
+                }
+              }
+
+              if (kind === 'workflow') {
+                if (!/on:\s*/.test(content) && !hasHeading(content, 'Workflow')) {
+                  result.findings.push('Workflow content does not clearly define triggers or workflow structure.');
+                  result.improvements.push('Add clear trigger logic or a dedicated workflow description section.');
+                }
+              }
+
+              if (!/validation/i.test(content)) {
+                result.findings.push('No validation logic detected.');
+                result.improvements.push('Add validation criteria, checks, or approval requirements.');
+              }
+
+              if (!/recommend/i.test(content)) {
+                result.findings.push('No recommendation guidance detected.');
+                result.improvements.push('Add recommendation or next-action guidance.');
+              }
+
+              if (result.findings.length === 0) {
+                result.findings.push('No major structural issues detected.');
+                result.improvements.push('Consider refining clarity, reducing repetition, and strengthening execution details.');
+              }
+
+              return result;
+            }
+
+            const evaluations = reviewTargets.map(evaluateFile);
+
+            const body = [
+              '## AI System Review Suggestions',
+              '',
+              'Automated review of changed AI system files:',
+              '',
+              ...evaluations.flatMap(result => {
+                return [
+                  `### ${result.file} (${result.kind})`,
+                  '',
+                  '**Findings**',
+                  ...result.findings.map(item => `- ${item}`),
+                  '',
+                  '**Suggested Improvements**',
+                  ...result.improvements.map(item => `- ${item}`),
+                  ''
+                ];
+              }),
+              '### Global Guidance',
+              '- Prefer improving an existing system before creating a new one.',
+              '- Ensure outputs are reusable, scalable, and maintainable.',
+              '- Reject placeholder-style or weakly governed files.',
+            ].join('\n');
+
+            if (isPR) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body,
+              });
+            } else {
+              await core.summary
+                .addHeading('AI System Review Suggestions')
+                .addRaw(body)
+                .write();
+            }
+
+      - name: Complete workflow
+        run: echo "AI governance review completed."
