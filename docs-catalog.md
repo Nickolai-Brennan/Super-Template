@@ -1,3 +1,20 @@
+## Published in this repository
+
+### Core docs
+- `docs/project-charter.md`
+- `docs/roadmap.md`
+- `docs/adrs/README.md`
+- `docs/runbooks/README.md`
+- `guidelines/copilot-agent-governance.md`
+
+### Templates
+- `templates/project-charter-template.md`
+- `templates/roadmap-template.md`
+- `templates/adr-template.md`
+- `templates/runbook-template.md`
+
+---
+
 Below is the working Project Planning + Tech Docs Catalog for Damn You Docs, cut for serious MVP execution. It keeps the full control-plane logic from the Master Control File and avoids the 180-doc overbuild trap.  
 
 Damn You Docs — Project Planning Catalog
