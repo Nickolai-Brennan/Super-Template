@@ -1,0 +1,140 @@
+tool-stack/
+├── README.md
+├── tool-registry.json
+├── tool-map.md
+├── stack-decisions.md
+│
+├── 00-intelligence/
+│   ├── ChatGPT-Premium.md
+│   ├── Gemini-Premium.md
+│   ├── NotebookLM.md
+│   ├── Bolt.new.md
+│   └── prompts/
+│
+├── 01-knowledge-docs/
+│   ├── Obsidian.md
+│   ├── Google-Docs.md
+│   ├── Google-Sheets.md
+│   ├── Google-Drive.md
+│   ├── Spark.md
+│   └── templates/
+│
+├── 02-design-creative/
+│   ├── Canva-Premium.md
+│   ├── Figma-Premium.md
+│   ├── Miro-Premium.md
+│   ├── Google-Stitch.md
+│   └── asset-workflows/
+│
+├── 03-development/
+│   ├── GitHub.md
+│   ├── GitHub-Copilot.md
+│   ├── VS-Code.md
+│   ├── Docker.md
+│   ├── Git.md
+│   └── extensions/
+│       ├── vscode-extensions.json
+│       ├── browser-extensions.md
+│       └── dev-apps.md
+│
+├── 04-automation/
+│   ├── n8n.md
+│   ├── GitHub-Actions.md
+│   ├── BullMQ.md
+│   ├── Celery.md
+│   ├── Temporal.md
+│   └── workflows/
+│       ├── docs-sync.workflow.md
+│       ├── seo-report.workflow.md
+│       ├── content-publish.workflow.md
+│       ├── sales-report.workflow.md
+│       └── weekly-health-report.workflow.md
+│
+├── 05-data-analytics/
+│   ├── MotherDuck.md
+│   ├── DuckDB.md
+│   ├── PostgreSQL.md
+│   ├── pgvector.md
+│   ├── PostHog.md
+│   ├── Google-Analytics.md
+│   ├── Google-Search-Console.md
+│   └── dashboards/
+│
+├── 06-search-ai-memory/
+│   ├── Meilisearch.md
+│   ├── Qdrant.md
+│   ├── pgvector.md
+│   ├── RAG-pipelines.md
+│   └── embedding-workflows/
+│
+├── 07-monitoring-ops/
+│   ├── Sentry.md
+│   ├── Grafana.md
+│   ├── Prometheus.md
+│   ├── Uptime-Kuma.md
+│   ├── Docker-Logs.md
+│   └── incident-reports/
+│
+├── 08-hosting-domains/
+│   ├── Hostinger.md
+│   ├── Vercel.md
+│   ├── Cloudflare.md
+│   ├── DNS-setup.md
+│   ├── SSL-setup.md
+│   └── deployment-maps/
+│
+├── 09-payments-sales-crm/
+│   ├── Stripe.md
+│   ├── HubSpot.md
+│   ├── ConvertKit.md
+│   ├── Mailchimp.md
+│   ├── Resend.md
+│   ├── Tally.md
+│   ├── Typeform.md
+│   └── sales-pipelines/
+│
+├── 10-seo-marketing/
+│   ├── Semrush.md
+│   ├── Ahrefs.md
+│   ├── Detailed-SEO-Extension.md
+│   ├── Keywords-Everywhere.md
+│   ├── Similarweb.md
+│   ├── Wappalyzer.md
+│   ├── Meta-SEO-Inspector.md
+│   └── campaign-workflows/
+│
+├── 11-storage-media/
+│   ├── Google-Drive.md
+│   ├── Cloudinary.md
+│   ├── MinIO.md
+│   ├── S3-compatible-storage.md
+│   ├── Loom.md
+│   ├── ShareX.md
+│   ├── Audacity.md
+│   └── DaVinci-Resolve.md
+│
+├── 12-api-testing/
+│   ├── Postman.md
+│   ├── Insomnia.md
+│   ├── Thunder-Client.md
+│   └── collections/
+│
+├── 13-security-quality/
+│   ├── Dependabot.md
+│   ├── Snyk.md
+│   ├── Playwright.md
+│   ├── ESLint.md
+│   ├── Prettier.md
+│   ├── Ruff.md
+│   └── quality-checklists/
+│
+├── 14-database-admin/
+│   ├── DBeaver.md
+│   ├── pgAdmin.md
+│   ├── TablePlus.md
+│   └── connection-guides/
+│
+└── 99-archive/
+    ├── deprecated-tools.md
+    ├── replaced-tools.md
+    └── old-stack-notes.md
