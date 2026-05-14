@@ -1,60 +1,57 @@
-AI Automation Creation Process
+# AI Automation Creation Process
 
-Purpose
+## Purpose
 
 When creating any new AI automation file, agent, skill, prompt, or instruction, you must also update the related registry files so the system can discover and route tasks correctly.
 
-Core rule:
+## Core Rule
 
-No AI file exists unless it is registered.
-No automation runs unless it has tags, triggers, owners, permissions, and fallback rules.
-
+- No AI file exists unless it is registered.
+- No automation runs unless it has tags, triggers, owners, permissions, and fallback rules.
 
 ---
 
-1. Standard Creation Flow
+## 1. Standard Creation Flow
 
-Create file
-→ Add metadata block
-→ Add tags
-→ Define triggers
-→ Define required agent
-→ Define required skills
-→ Define required tools
-→ Define permissions
-→ Define outputs
-→ Define failure behavior
-→ Update registry
-→ Update master index
+Create file  
+→ Add metadata block  
+→ Add tags  
+→ Define triggers  
+→ Define required agent  
+→ Define required skills  
+→ Define required tools  
+→ Define permissions  
+→ Define outputs  
+→ Define failure behavior  
+→ Update registry  
+→ Update master index  
 → Add test/eval entry
 
+---
+
+## 2. Required Updates by File Type
+
+| Created File Type | Must Update |
+|---|---|
+| Agent | `AGENT_REGISTRY.md`, `AGENT_ROUTING_RULES.md`, `PERMISSION_MATRIX.md` |
+| Skill | `SKILL_REGISTRY.md`, `agent skills.md`, `SKILL_PERMISSION_MATRIX.md` |
+| Instruction | `INSTRUCTION_REGISTRY.md`, related agent/workflow file |
+| Prompt | `PROMPT_REGISTRY.md`, related skill or agent |
+| Automation | `AUTOMATION_REGISTRY.md`, `AUTOMATION_TRIGGERS.md`, `WORKFLOW_REGISTRY.md` |
+| Hook | `HOOK_REGISTRY.md`, `AUTOMATION_REGISTRY.md` |
+| Workflow | `WORKFLOW_REGISTRY.md`, `WORKFLOW_STATE_MACHINE.md` |
+| Tool | `TOOL_REGISTRY.md`, `TOOL_PERMISSION_MATRIX.md`, related agent tools.md |
+| MCP Server | `MCP_SERVER_REGISTRY.md`, `MCP_TOOL_REGISTRY.md` |
+| Knowledge Source | `KNOWLEDGE_REGISTRY.md`, `RAG_PIPELINE.md` |
+| Memory Rule | `MEMORY_SYSTEM.md`, `MEMORY_RETENTION_POLICY.md` |
 
 ---
 
-2. Required Updates by File Type
-
-Created File Type	Must Update
-
-- Agent	```AGENT_REGISTRY.md, AGENT_ROUTING_RULES.md, PERMISSION_MATRIX.md```
-- Skill	```SKILL_REGISTRY.md, agent skills.md, SKILL_PERMISSION_MATRIX.md```
-- Instruction ```INSTRUCTION_REGISTRY.md, related agent/workflow file```
-Prompt	PROMPT_REGISTRY.md, related skill or agent
-Automation	AUTOMATION_REGISTRY.md, AUTOMATION_TRIGGERS.md, WORKFLOW_REGISTRY.md
-Hook	HOOK_REGISTRY.md, AUTOMATION_REGISTRY.md
-Workflow	WORKFLOW_REGISTRY.md, WORKFLOW_STATE_MACHINE.md
-Tool	TOOL_REGISTRY.md, TOOL_PERMISSION_MATRIX.md, related agent tools.md
-MCP Server	MCP_SERVER_REGISTRY.md, MCP_TOOL_REGISTRY.md
-Knowledge Source	KNOWLEDGE_REGISTRY.md, RAG_PIPELINE.md
-Memory Rule	MEMORY_SYSTEM.md, MEMORY_RETENTION_POLICY.md
-
-
-
----
-
-3. Required Metadata Block
+## 3. Required Metadata Block
 
 Every AI-related file should start with this:
 
+```yaml
 ---
 id: ai-file-id
 type: agent | skill | instruction | prompt | automation | hook | workflow | tool | knowledge
@@ -93,14 +90,15 @@ human_review_required: true
 fallback: fallback-name
 audit_required: true
 ---
-
+```
 
 ---
 
-4. Example: Markdown Formatting Agent
+## 4. Example: Markdown Formatting Agent
 
-Step A — Create Agent Folder
+### Step A — Create Agent Folder
 
+```text
 /agents/markdown-formatting-agent
   AGENT.md
   instructions.md
@@ -108,12 +106,11 @@ Step A — Create Agent Folder
   tools.md
   workflows.md
   examples.md
+```
 
+### Step B — Create `AGENT.md`
 
----
-
-Step B — Create AGENT.md
-
+```yaml
 ---
 id: agent.markdown-formatting
 type: agent
@@ -184,12 +181,11 @@ Formats, cleans, validates, and standardizes markdown documents.
 - Delete source documents
 - Publish directly to production
 - Modify legal/security docs without approval
+```
 
+### Step C — Create `instructions.md`
 
----
-
-Step C — Create instructions.md
-
+````markdown
 # Markdown Formatting Agent Instructions
 
 ## Formatting Rules
@@ -203,12 +199,11 @@ Step C — Create instructions.md
 
 ## Review Rules
 Human review is required before replacing published docs.
+````
 
+### Step D — Create `skills.md`
 
----
-
-Step D — Create skills.md
-
+```markdown
 # Skills Used
 
 | Skill | Purpose | Required |
@@ -216,29 +211,29 @@ Step D — Create skills.md
 | `skill.markdown-cleanup` | Clean markdown formatting | Yes |
 | `skill.structure-validation` | Validate heading hierarchy | Yes |
 | `skill.link-validation` | Check links | Optional |
-
+```
 
 ---
 
-5. Update Agent Registry
+## 5. Update Agent Registry
 
 Add to:
 
-/agents/AGENT_REGISTRY.md
+`/agents/AGENT_REGISTRY.md`
 
 | ID | Name | Status | Tags | Domains | Skills | Human Review |
 |---|---|---|---|---|---|---|
 | `agent.markdown-formatting` | Markdown Formatting Agent | active | markdown, formatting, documentation, cleanup | docs, content | markdown-cleanup, structure-validation, link-validation | Yes |
 
-
 ---
 
-6. Update Agent Routing Rules
+## 6. Update Agent Routing Rules
 
 Add to:
 
-/agents/AGENT_ROUTING_RULES.md
+`/agents/AGENT_ROUTING_RULES.md`
 
+```yaml
 - route_id: route.markdown-formatting
   match:
     tags:
@@ -253,16 +248,17 @@ Add to:
   agent: agent.markdown-formatting
   priority: 80
   fallback: agent.docs-agent
-
+```
 
 ---
 
-7. Create Required Skills
+## 7. Create Required Skills
 
 Example:
 
-/skills/markdown-cleanup/SKILL.md
+`/skills/markdown-cleanup/SKILL.md`
 
+```yaml
 ---
 id: skill.markdown-cleanup
 type: skill
@@ -287,7 +283,9 @@ permissions:
 human_review_required: false
 audit_required: true
 ---
+```
 
+```markdown
 # Markdown Cleanup Skill
 
 ## Purpose
@@ -301,29 +299,29 @@ Clean and normalize markdown formatting.
 5. Normalize lists.
 6. Preserve code blocks.
 7. Return cleaned markdown plus change summary.
-
+```
 
 ---
 
-8. Update Skill Registry
+## 8. Update Skill Registry
 
 Add to:
 
-/skills/SKILL_REGISTRY.md
+`/skills/SKILL_REGISTRY.md`
 
 | ID | Name | Status | Tags | Inputs | Outputs | Used By |
 |---|---|---|---|---|---|---|
 | `skill.markdown-cleanup` | Markdown Cleanup | active | markdown, formatting, cleanup | markdown_document | formatted_markdown, change_summary | agent.markdown-formatting |
 
-
 ---
 
-9. Create Automation File
+## 9. Create Automation File
 
 Example:
 
-/automation/rules/markdown-formatting.rule.yml
+`/automation/rules/markdown-formatting.rule.yml`
 
+```yaml
 id: automation.markdown-formatting
 type: automation
 name: Markdown Formatting Automation
@@ -364,40 +362,39 @@ fallback:
 audit:
   required: true
   log_to: observability/automation-runs
-
+```
 
 ---
 
-10. Update Automation Registry
+## 10. Update Automation Registry
 
 Add to:
 
-/automation/AUTOMATION_REGISTRY.md
+`/automation/AUTOMATION_REGISTRY.md`
 
 | ID | Name | Trigger | Agent | Skills | Status | Review |
 |---|---|---|---|---|---|---|
 | `automation.markdown-formatting` | Markdown Formatting Automation | doc.created, doc.updated | agent.markdown-formatting | markdown-cleanup, structure-validation | active | Required |
 
-
 ---
 
-11. Update Workflow Registry
+## 11. Update Workflow Registry
 
 Add to:
 
-/workflows/WORKFLOW_REGISTRY.md
+`/workflows/WORKFLOW_REGISTRY.md`
 
 | ID | Name | Trigger | Agent | Output | Status |
 |---|---|---|---|---|---|
 | `workflow.documentation-formatting` | Documentation Formatting Workflow | doc.created, doc.updated | agent.markdown-formatting | formatted markdown + report | active |
 
-
 ---
 
-12. Add Workflow Definition
+## 12. Add Workflow Definition
 
-/workflows/documentation-formatting.workflow.md
+`/workflows/documentation-formatting.workflow.md`
 
+```yaml
 ---
 id: workflow.documentation-formatting
 type: workflow
@@ -417,7 +414,9 @@ skills:
 human_review_required: true
 audit_required: true
 ---
+```
 
+```markdown
 # Documentation Formatting Workflow
 
 ## Flow
@@ -430,24 +429,24 @@ audit_required: true
 7. Generate change report.
 8. Send to human review.
 9. Log execution.
-
+```
 
 ---
 
-13. Update Master Files
+## 13. Update Master Files
 
 Update these:
 
-AI_MASTER_INDEX.md
-AGENT_REGISTRY.md
-SKILL_REGISTRY.md
-AUTOMATION_REGISTRY.md
-WORKFLOW_REGISTRY.md
-INSTRUCTION_REGISTRY.md
-TOOL_REGISTRY.md
-OBSERVABILITY_INDEX.md
+- `AI_MASTER_INDEX.md`
+- `AGENT_REGISTRY.md`
+- `SKILL_REGISTRY.md`
+- `AUTOMATION_REGISTRY.md`
+- `WORKFLOW_REGISTRY.md`
+- `INSTRUCTION_REGISTRY.md`
+- `TOOL_REGISTRY.md`
+- `OBSERVABILITY_INDEX.md`
 
-Minimum entry:
+### Minimum Entry
 
 ## Markdown Formatting System
 
@@ -469,61 +468,59 @@ Primary skills:
 Human review:
 - Required before published docs are changed.
 
-
 ---
 
-14. Required Tags
+## 14. Required Tags
 
 Use consistent tags.
 
-Domain Tags
+### Domain Tags
 
-frontend
-backend
-database
-docs
-security
-release
-support
-analytics
-product
-operations
+- frontend
+- backend
+- database
+- docs
+- security
+- release
+- support
+- analytics
+- product
+- operations
 
-Capability Tags
+### Capability Tags
 
-formatting
-summarization
-classification
-validation
-generation
-routing
-search
-metadata
-analysis
-reporting
+- formatting
+- summarization
+- classification
+- validation
+- generation
+- routing
+- search
+- metadata
+- analysis
+- reporting
 
-Trigger Tags
+### Trigger Tags
 
-manual
-event-driven
-scheduled
-threshold
-webhook
-status-change
+- manual
+- event-driven
+- scheduled
+- threshold
+- webhook
+- status-change
 
-Risk Tags
+### Risk Tags
 
-safe-read
-draft-write
-production-write
-destructive
-approval-required
-security-sensitive
-
+- safe-read
+- draft-write
+- production-write
+- destructive
+- approval-required
+- security-sensitive
 
 ---
 
-15. Final Checklist
+## 15. Final Checklist
 
 Before any AI automation is complete:
 
@@ -543,19 +540,18 @@ Before any AI automation is complete:
 - [ ] Workflow updated
 - [ ] Eval/test entry added
 
-
 ---
 
-16. Simple Rule
+## 16. Simple Rule
 
 When adding anything AI-related:
 
-Create the file.
-Register the file.
-Tag the file.
-Route the file.
-Govern the file.
-Log the file.
-Test the file.
+- Create the file.
+- Register the file.
+- Tag the file.
+- Route the file.
+- Govern the file.
+- Log the file.
+- Test the file.
 
 That makes agents able to discover and use the correct files for the correct task.
